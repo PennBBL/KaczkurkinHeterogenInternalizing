@@ -58,7 +58,7 @@ ctGamViz <- getViz(ctGam)
 
 #Plot ct by group
 plot(ctGamViz, allTerms = TRUE, select = 4) + 
-  ylab("Average CT Estimates") + xlab("") + 
+  labs(x = "", y = "Average CT (mm)") +
   l_fitPoints(mapping = aes(x=x,y=y,col=x)) + 
   l_points(mapping = aes(x=x,y=y,col=x), shape=19, size=2.5) + 
   l_ciBar(linetype=1, size=1) + 
@@ -113,7 +113,7 @@ volGamViz <- getViz(volGam)
 
 ##Plot total gray matter by group
 plot(volGamViz, allTerms = TRUE, select = 4) + 
-  ylab("Total GM Volume Estimates") + xlab("") + 
+  labs(x = "", y = bquote('Total GM Volume'~(cm^3))) +
   l_fitPoints(mapping = aes(x=x,y=y,col=x)) + 
   l_points(mapping = aes(x=x,y=y,col=x), shape=19, size=2.5) + 
   l_ciBar(linetype=1, size=1) + 

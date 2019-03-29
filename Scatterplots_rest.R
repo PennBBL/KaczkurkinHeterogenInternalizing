@@ -55,7 +55,7 @@ restGamViz <- getViz(restGam)
 
 #Plot rest by group
 plot(restGamViz, allTerms = TRUE, select = 4) + 
-  ylab("Average Rest Estimates") + xlab("") + 
+  labs(x = "", y = "Average ALFF (z)") + 
   l_fitPoints(mapping = aes(x=x,y=y,col=x)) + 
   l_points(mapping = aes(x=x,y=y,col=x), shape=19, size=2.5) + 
   l_ciBar(linetype=1, size=1) + ylim(-1, 1.75) +

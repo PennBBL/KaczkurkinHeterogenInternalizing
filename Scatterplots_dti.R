@@ -52,7 +52,7 @@ dtiGamViz <- getViz(dtiGam)
 
 #Plot dti by group
 plot(dtiGamViz, allTerms = TRUE, select = 4) + 
-  ylab("Average DTI Estimates") + xlab("") + 
+  labs(x = "", y = "Average FA (z)") + 
   l_fitPoints(mapping = aes(x=x,y=y,col=x)) + 
   l_points(mapping = aes(x=x,y=y,col=x), shape=19, size=2.5) + 
   l_ciBar(linetype=1, size=1) +
