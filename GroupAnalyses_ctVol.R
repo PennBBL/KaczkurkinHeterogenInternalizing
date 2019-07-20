@@ -6,7 +6,7 @@
 ### Load data and libraries ###
 ###############################
 
-subjData <- readRDS("/data/jux/BBL/projects/pncHeterogeneity/subjectData/MergedWithHYDRA/n1141_DepAnxTd_t1_hydra_subjData.rds")
+subjData <- readRDS("/data/jux/BBL/projects/pncHeterogeneity/subjectData/MergedWithHYDRA/n1141_DepAnxTd_t1_hydra_ICV_trauma_subjData.rds")
 
 #Load libraries ("plyr" needs to be loaded before "dplyr")
 library(plyr)
@@ -274,6 +274,58 @@ medu_fdr_round <- round(medu_fdr,3)
 ##Follow-up on significant results
 #Means and SDs
 meduDescriptives <- tapply(subjData$medu1, subjData$Hydra_k2, describe)
+
+
+#######################
+### Trauma exposure ###
+#######################
+
+##Run model
+traumaLm <- lm(trauma_T1 ~ Hydra_k2, data=subjData)
+
+#Look at model summary
+traumaLmSumm <- summary(traumaLm)
+
+
+##Pass the results to the anova() function to fit ANOVAs
+#This is your omnibus ANOVA test (tells you if the three groups are significantly different)
+#df1=k-1, df2=n-k
+traumaAnova <- anova(traumaLm)
+
+
+##Run same model with Hydra_k2_reordered to make S2 the comparison group in order to see S1 vs S2 differences in the model.
+traumaLm_reordered <- lm(trauma_T1 ~ Hydra_k2_reordered, data=subjData)
+
+#Look at model summary
+traumaLmSumm_reordered <- summary(traumaLm_reordered)
+
+
+##Pairwise comparisons
+#Pull uncorrected p-values
+trauma_S1vsTd <- summary(traumaLm)$coefficients[2,4]
+trauma_S2vsTd <- summary(traumaLm)$coefficients[3,4]
+trauma_S1vsS2 <- summary(traumaLm_reordered)$coefficients[2,4]
+
+#Combine the pairwise p values
+trauma_pairs <- cbind(trauma_S1vsTd,trauma_S2vsTd,trauma_S1vsS2)
+
+#Convert to data frame
+trauma_pairs <- as.data.frame(trauma_pairs)
+
+#Print original p-values to three decimal places
+trauma_pairs_round <- round(trauma_pairs,3)
+
+
+##FDR correction across the three pairwise group comparisons (S1vsTd, S2vsTd, and S1vsS2)
+trauma_fdr <- p.adjust(trauma_pairs[1,],method="fdr")
+
+#Print fdr-corrected p-values to three decimal places
+trauma_fdr_round <- round(trauma_fdr,3)
+
+
+##Follow-up on significant results
+#Means and SDs
+traumaDescriptives <- tapply(subjData$trauma_T1, subjData$Hydra_k2, describe)
 
 
 #################################
@@ -840,6 +892,43 @@ write.table(ct_merged_S2vsTd, file="/data/jux/BBL/projects/pncHeterogeneity/subj
 
 
 ##################
+### Average CT ###
+##################
+
+#Create a mean ct variable that includes all significant ct regions
+subjData$averageCT_signifRegions <- rowMeans(subset(subjData, select = ctRegions))
+
+#Run model
+avgCtGam <- gam(averageCT_signifRegions ~ s(age) + sex + averageManualRating + Hydra_k2, method="REML", data=subjData)
+
+#Run same model with Hydra_k2_reordered to make S2 the comparison group in order to see S1 vs S2 differences in the model.
+avgCtGam2 <- gam(averageCT_signifRegions ~ s(age) + sex + averageManualRating + Hydra_k2_reordered, method="REML", data=subjData)
+
+##Pass the results to the anova() function to fit ANOVAs (only anova() and not aov() can fit GAMs)
+#This is your omnibus ANOVA test (tells you if the three groups are significantly different)
+#df1=k-1, df2=n-k
+avgCtAnova <- anova(avgCtGam)
+
+##Pairwise comparisons
+#Pull uncorrected p-values
+avgCt_S1vsTd <- summary(avgCtGam)$p.table[4,4]
+avgCt_S2vsTd <- summary(avgCtGam)$p.table[5,4]
+avgCt_S1vsS2 <- summary(avgCtGam2)$p.table[4,4]
+
+#Combine the pairwise p values
+avgCt_pairs <- cbind(avgCt_S1vsTd,avgCt_S2vsTd,avgCt_S1vsS2)
+
+#Convert to data frame
+avgCt_pairs <- as.data.frame(avgCt_pairs)
+
+##FDR correction across the three pairwise group comparisons (S1vsTd, S2vsTd, and S1vsS2)
+avgCt_fdr <- p.adjust(avgCt_pairs[1,],method="fdr")
+
+#Print fdr-corrected p-values to three decimal places
+avgCt_fdr_round <- round(avgCt_fdr,3)
+
+
+##################
 ### JLF volume ###
 ##################
 
@@ -1080,3 +1169,114 @@ vol_merged_S2vsTd$ROI_NAME <- NULL
 
 #Save as a .csv
 write.table(vol_merged_S2vsTd, file="/data/jux/BBL/projects/pncHeterogeneity/subjectData/Tvalues/t_index_vol_S2vsTd.csv", row.names=FALSE, col.names=FALSE, quote = FALSE, sep=",")
+
+
+################################
+### Total gray matter volume ###
+################################
+
+#Divide total gray matter volume by 1000 to change the units from cubic millimeters (mm3) to cubic centimeters (cc3); 1 cc3 = 1,000 mm3
+subjData$mprage_antsCT_vol_GrayMatter <- subjData$mprage_antsCT_vol_GrayMatter/1000
+
+#Run model
+totGrayGam <- gam(mprage_antsCT_vol_GrayMatter ~ s(age) + sex + averageManualRating + Hydra_k2, method="REML", data=subjData)
+
+#Run same model with Hydra_k2_reordered to make S2 the comparison group in order to see S1 vs S2 differences in the model.
+totGrayGam2 <- gam(mprage_antsCT_vol_GrayMatter ~ s(age) + sex + averageManualRating + Hydra_k2_reordered, method="REML", data=subjData)
+
+##Pass the results to the anova() function to fit ANOVAs (only anova() and not aov() can fit GAMs)
+#This is your omnibus ANOVA test (tells you if the three groups are significantly different)
+#df1=k-1, df2=n-k
+totGrayAnova <- anova(totGrayGam)
+
+##Pairwise comparisons
+#Pull uncorrected p-values
+totGray_S1vsTd <- summary(totGrayGam)$p.table[4,4]
+totGray_S2vsTd <- summary(totGrayGam)$p.table[5,4]
+totGray_S1vsS2 <- summary(totGrayGam2)$p.table[4,4]
+
+#Combine the pairwise p values
+totGray_pairs <- cbind(totGray_S1vsTd,totGray_S2vsTd,totGray_S1vsS2)
+
+#Convert to data frame
+totGray_pairs <- as.data.frame(totGray_pairs)
+
+##FDR correction across the three pairwise group comparisons (S1vsTd, S2vsTd, and S1vsS2)
+totGray_fdr <- p.adjust(totGray_pairs[1,],method="fdr")
+
+#Print fdr-corrected p-values to three decimal places
+totGray_fdr_round <- round(totGray_fdr,3)
+
+
+###########
+### ICV ###
+###########
+
+#Divide ICV by 1000 to change the units from cubic millimeters (mm3) to cubic centimeters (cc3); 1 cc3 = 1,000 mm3
+subjData$ICV <- subjData$ICV/1000
+
+#Run model
+icvGam <- gam(ICV ~ s(age) + sex + averageManualRating + Hydra_k2, method="REML", data=subjData)
+
+#Run same model with Hydra_k2_reordered to make S2 the comparison group in order to see S1 vs S2 differences in the model.
+icvGam2 <- gam(ICV ~ s(age) + sex + averageManualRating + Hydra_k2_reordered, method="REML", data=subjData)
+
+##Pass the results to the anova() function to fit ANOVAs (only anova() and not aov() can fit GAMs)
+#This is your omnibus ANOVA test (tells you if the three groups are significantly different)
+#df1=k-1, df2=n-k
+icvAnova <- anova(icvGam)
+
+##Pairwise comparisons
+#Pull uncorrected p-values
+icv_S1vsTd <- summary(icvGam)$p.table[4,4]
+icv_S2vsTd <- summary(icvGam)$p.table[5,4]
+icv_S1vsS2 <- summary(icvGam2)$p.table[4,4]
+
+#Combine the pairwise p values
+icv_pairs <- cbind(icv_S1vsTd,icv_S2vsTd,icv_S1vsS2)
+
+#Convert to data frame
+icv_pairs <- as.data.frame(icv_pairs)
+
+##FDR correction across the three pairwise group comparisons (S1vsTd, S2vsTd, and S1vsS2)
+icv_fdr <- p.adjust(icv_pairs[1,],method="fdr")
+
+#Print fdr-corrected p-values to three decimal places
+icv_fdr_round <- round(icv_fdr,3)
+
+
+###########
+### TBV ###
+###########
+
+#Divide TBV by 1000 to change the units from cubic millimeters (mm3) to cubic centimeters (cc3); 1 cc3 = 1,000 mm3
+subjData$mprage_antsCT_vol_TBV <- subjData$mprage_antsCT_vol_TBV/1000
+
+#Run model
+tbvGam <- gam(mprage_antsCT_vol_TBV ~ s(age) + sex + averageManualRating + Hydra_k2, method="REML", data=subjData)
+
+#Run same model with Hydra_k2_reordered to make S2 the comparison group in order to see S1 vs S2 differences in the model.
+tbvGam2 <- gam(mprage_antsCT_vol_TBV ~ s(age) + sex + averageManualRating + Hydra_k2_reordered, method="REML", data=subjData)
+
+##Pass the results to the anova() function to fit ANOVAs (only anova() and not aov() can fit GAMs)
+#This is your omnibus ANOVA test (tells you if the three groups are significantly different)
+#df1=k-1, df2=n-k
+tbvAnova <- anova(tbvGam)
+
+##Pairwise comparisons
+#Pull uncorrected p-values
+tbv_S1vsTd <- summary(tbvGam)$p.table[4,4]
+tbv_S2vsTd <- summary(tbvGam)$p.table[5,4]
+tbv_S1vsS2 <- summary(tbvGam2)$p.table[4,4]
+
+#Combine the pairwise p values
+tbv_pairs <- cbind(tbv_S1vsTd,tbv_S2vsTd,tbv_S1vsS2)
+
+#Convert to data frame
+tbv_pairs <- as.data.frame(tbv_pairs)
+
+##FDR correction across the three pairwise group comparisons (S1vsTd, S2vsTd, and S1vsS2)
+tbv_fdr <- p.adjust(tbv_pairs[1,],method="fdr")
+
+#Print fdr-corrected p-values to three decimal places
+tbv_fdr_round <- round(tbv_fdr,3)

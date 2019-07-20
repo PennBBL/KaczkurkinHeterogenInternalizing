@@ -27,32 +27,6 @@ subjData$averageCT_signifRegions <- rowMeans(subset(subjData, select =ctRegions)
 #Run model
 ctGam <- gam(averageCT_signifRegions ~ s(age) + sex + averageManualRating + Hydra_k2, method="REML", data=subjData)
 
-#Run same model with Hydra_k2_reordered to make S2 the comparison group in order to see S1 vs S2 differences in the model.
-ctGam2 <- gam(averageCT_signifRegions ~ s(age) + sex + averageManualRating + Hydra_k2_reordered, method="REML", data=subjData)
-
-##Pass the results to the anova() function to fit ANOVAs (only anova() and not aov() can fit GAMs)
-#This is your omnibus ANOVA test (tells you if the three groups are significantly different)
-#df1=k-1, df2=n-k
-ctAnova <- anova(ctGam)
-
-##Pairwise comparisons
-#Pull uncorrected p-values
-ct_S1vsTd <- summary(ctGam)$p.table[4,4]
-ct_S2vsTd <- summary(ctGam)$p.table[5,4]
-ct_S1vsS2 <- summary(ctGam2)$p.table[4,4]
-
-#Combine the pairwise p values
-ct_pairs <- cbind(ct_S1vsTd,ct_S2vsTd,ct_S1vsS2)
-
-#Convert to data frame
-ct_pairs <- as.data.frame(ct_pairs)
-
-##FDR correction across the three pairwise group comparisons (S1vsTd, S2vsTd, and S1vsS2)
-ct_fdr <- p.adjust(ct_pairs[1,],method="fdr")
-
-#Print fdr-corrected p-values to three decimal places
-ct_fdr_round <- round(ct_fdr,3)
-
 #Convert the fitted object to the gamViz class to use the tools in mgcViz
 ctGamViz <- getViz(ctGam)
 
@@ -81,32 +55,6 @@ subjData$mprage_antsCT_vol_GrayMatter <- subjData$mprage_antsCT_vol_GrayMatter/1
 
 #Run model
 volGam <- gam(mprage_antsCT_vol_GrayMatter ~ s(age) + sex + averageManualRating + Hydra_k2, method="REML", data=subjData)
-
-#Run same model with Hydra_k2_reordered to make S2 the comparison group in order to see S1 vs S2 differences in the model.
-volGam2 <- gam(mprage_antsCT_vol_GrayMatter ~ s(age) + sex + averageManualRating + Hydra_k2_reordered, method="REML", data=subjData)
-
-##Pass the results to the anova() function to fit ANOVAs (only anova() and not aov() can fit GAMs)
-#This is your omnibus ANOVA test (tells you if the three groups are significantly different)
-#df1=k-1, df2=n-k
-volAnova <- anova(volGam)
-
-##Pairwise comparisons
-#Pull uncorrected p-values
-vol_S1vsTd <- summary(volGam)$p.table[4,4]
-vol_S2vsTd <- summary(volGam)$p.table[5,4]
-vol_S1vsS2 <- summary(volGam2)$p.table[4,4]
-
-#Combine the pairwise p values
-vol_pairs <- cbind(vol_S1vsTd,vol_S2vsTd,vol_S1vsS2)
-
-#Convert to data frame
-vol_pairs <- as.data.frame(vol_pairs)
-
-##FDR correction across the three pairwise group comparisons (S1vsTd, S2vsTd, and S1vsS2)
-vol_fdr <- p.adjust(vol_pairs[1,],method="fdr")
-
-#Print fdr-corrected p-values to three decimal places
-vol_fdr_round <- round(vol_fdr,3)
 
 ##Convert the fitted object to the gamViz class to use the tools in mgcViz
 volGamViz <- getViz(volGam)

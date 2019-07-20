@@ -21,32 +21,6 @@ subjData$averageDTI_signifRegions <- rowMeans(subset(subjData, select = dtiRegio
 #Run model
 dtiGam <- gam(averageDTI_signifRegions ~ s(age) + sex + dti64Tsnr + Hydra_k2, method="REML", data=subjData)
 
-#Run same model with Hydra_k2_reordered to make S2 the comparison group in order to see S1 vs S2 differences in the model.
-dtiGam2 <- gam(averageDTI_signifRegions ~ s(age) + sex + dti64Tsnr + Hydra_k2_reordered, method="REML", data=subjData)
-
-##Pass the results to the anova() function to fit ANOVAs (only anova() and not aov() can fit GAMs)
-#This is your omnibus ANOVA test (tells you if the three groups are significantly different)
-#df1=k-1, df2=n-k
-dtiAnova <- anova(dtiGam)
-
-##Pairwise comparisons
-#Pull uncorrected p-values
-dti_S1vsTd <- summary(dtiGam)$p.table[4,4]
-dti_S2vsTd <- summary(dtiGam)$p.table[5,4]
-dti_S1vsS2 <- summary(dtiGam2)$p.table[4,4]
-
-#Combine the pairwise p values
-dti_pairs <- cbind(dti_S1vsTd,dti_S2vsTd,dti_S1vsS2)
-
-#Convert to data frame
-dti_pairs <- as.data.frame(dti_pairs)
-
-##FDR correction across the three pairwise group comparisons (S1vsTd, S2vsTd, and S1vsS2)
-dti_fdr <- p.adjust(dti_pairs[1,],method="fdr")
-
-#Print fdr-corrected p-values to three decimal places
-dti_fdr_round <- round(dti_fdr,3)
-
 #Convert the fitted object to the gamViz class to use the tools in mgcViz
 dtiGamViz <- getViz(dtiGam)
 

@@ -1,0 +1,18 @@
+---
+title: "R Dependencies"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## List of dependencies
+
+List of dependencies for packages used in "Neurostructural Heterogeneity in Internalizing Youth." All analyses run with R version 3.2.3
+
+```{r}
+library(miniCRAN)
+packages <- c("plyr", "mgcv", "dplyr", "varhandle", "psych", "schoolmath", "ggplot2", "mgcViz")
+pkgDep(packages, suggests = TRUE, enhances = FALSE)
+```
