@@ -1,0 +1,21 @@
+---
+title: "mgcViz Dependencies"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## List of dependencies
+
+List of dependencies for mgcViz used in "Neurostructural Heterogeneity in Internalizing Youth."
+
+```{r}
+library(miniCRAN)
+sessionInfo()
+dep <- pkgDep("mgcViz", suggests = FALSE, enhances = FALSE)
+print(dep)
+dep <- as.vector(dep)
+sapply(dep, packageVersion)
+```
