@@ -9,10 +9,14 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## List of dependencies
 
-List of dependencies for packages used in "Neurostructural Heterogeneity in Internalizing Youth." All analyses run with R version 3.2.3
+List of dependencies for packages used in "Neurostructural Heterogeneity in Internalizing Youth."
 
 ```{r}
 library(miniCRAN)
-packages <- c("plyr", "mgcv", "dplyr", "varhandle", "psych", "schoolmath", "ggplot2", "mgcViz")
-pkgDep(packages, suggests = TRUE, enhances = FALSE)
+sessionInfo()
+packages <- c("plyr", "mgcv", "dplyr", "varhandle", "psych", "schoolmath", "ggplot2")
+dep <- pkgDep(packages, suggests = FALSE, enhances = FALSE)
+print(dep)
+dep <- as.vector(dep)
+sapply(dep, packageVersion)
 ```
